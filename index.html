@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fachgebiets-Assessment Steuerrecht</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+:root {
+  --navy: #1B2A4A;
+  --gold: #C9A84C;
+  --gold-light: #F5EDD6;
+  --cream: #FAF9F6;
+  --white: #FFFFFF;
+  --border: #DDD8CC;
+  --muted: #6B7A8D;
+  --text: #1B2A4A;
+  --green: #1E6B3C;
+  --red: #C0392B;
+  --shadow: 0 2px 12px rgba(27,42,74,0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Georgia', serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* HERO */
+.hero { background: var(--navy); padding: 56px 24px 48px; text-align: center; }
+.hero-kicker { font-family: 'Helvetica Neue', sans-serif; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+.hero h1 { font-size: clamp(26px, 5vw, 38px); font-weight: 400; color: var(--white); line-height: 1.25; margin-bottom: 12px; }
+.hero h1 em { color: var(--gold); font-style: italic; }
+.hero p { font-family: 'Helvetica Neue', sans-serif; font-size: 15px; color: rgba(255,255,255,0.65); max-width: 520px; margin: 0 auto 32px; line-height: 1.6; }
+.hero-divider { width: 40px; height: 2px; background: var(--gold); margin: 0 auto 32px; }
+
+/* FORM */
+.form-section { background: var(--white); border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.form-label { font-family: 'Helvetica Neue', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: block; }
+.form-input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 15px; font-family: 'Helvetica Neue', sans-serif; color: var(--text); background: var(--cream); outline: none; transition: border-color 0.2s; }
+.form-input:focus { border-color: var(--gold); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* BUTTON */
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; border-radius: 8px; font-family: 'Helvetica Neue', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; }
+.btn-primary { background: var(--gold); color: var(--navy); }
+.btn-primary:hover { background: #B8963A; }
+.btn-secondary { background: transparent; color: var(--navy); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--navy); }
+.btn-full { width: 100%; justify-content: center; }
+
+/* PROGRESS */
+.progress-wrap { background: var(--navy); padding: 20px 24px; position: sticky; top: 0; z-index: 10; }
+.progress-inner { max-width: 760px; margin: 0 auto; display: flex; align-items: center; gap: 16px; }
+.progress-label { font-family: 'Helvetica Neue', sans-serif; font-size: 12px; color: rgba(255,255,255,0.6); white-space: nowrap; }
+.progress-bar { flex: 1; height: 3px; background: rgba(255,255,255,0.15); border-radius: 2px; }
+.progress-fill { height: 100%; background: var(--gold); border-radius: 2px; transition: width 0.4s; }
+.progress-count { font-family: 'Helvetica Neue', sans-serif; font-size: 12px; color: var(--gold); white-space: nowrap; }
+
+/* QUIZ CONTAINER */
+.quiz-body { max-width: 760px; margin: 0 auto; padding: 32px 24px 40px; }
+.page-title { font-size: 13px; font-family: 'Helvetica Neue', sans-serif; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+
+/* QUESTION CARD */
+.q-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; transition: border-color 0.2s, box-shadow 0.2s; }
+.q-card.complete { border-color: var(--gold); box-shadow: 0 0 0 1px rgba(201,168,76,0.2); }
+.q-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+.q-name { font-size: 17px; font-weight: 400; color: var(--navy); line-height: 1.3; flex: 1; }
+.q-badge { font-family: 'Helvetica Neue', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.06em; color: var(--gold); text-transform: uppercase; opacity: 0; transition: opacity 0.2s; margin-left: 12px; flex-shrink: 0; margin-top: 4px; }
+.q-card.complete .q-badge { opacity: 1; }
+.q-desc { font-family: 'Helvetica Neue', sans-serif; font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 20px; }
+
+.rating-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.rating-row:last-child { margin-bottom: 0; }
+.rating-label { font-family: 'Helvetica Neue', sans-serif; font-size: 12px; font-weight: 500; color: var(--muted); width: 90px; flex-shrink: 0; }
+.stars-wrap { display: flex; align-items: center; gap: 6px; flex: 1; }
+.star-edge { font-family: 'Helvetica Neue', sans-serif; font-size: 11px; color: var(--muted); }
+.star-edge.right { margin-left: auto; }
+.star-btns { display: flex; gap: 4px; }
+.s-btn { width: 36px; height: 36px; border-radius: 6px; border: 1px solid var(--border); background: var(--cream); font-family: 'Helvetica Neue', sans-serif; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+.s-btn:hover { border-color: var(--gold); color: var(--navy); }
+.s-btn.sk { background: var(--navy); border-color: var(--navy); color: var(--white); }
+.s-btn.si { background: var(--gold); border-color: var(--gold); color: var(--navy); }
+
+/* PAGE NAV */
+.page-warn { font-family: 'Helvetica Neue', sans-serif; font-size: 13px; color: var(--red); text-align: center; margin-bottom: 16px; display: none; }
+.nav-row { display: flex; gap: 12px; justify-content: space-between; align-items: center; margin-top: 24px; }
+
+/* INTRO */
+.intro-body { max-width: 600px; margin: 0 auto; padding: 40px 24px; }
+.intro-card { background: var(--white); border-radius: 12px; padding: 32px; box-shadow: var(--shadow); margin-bottom: 24px; }
+.intro-card h2 { font-size: 22px; font-weight: 400; margin-bottom: 16px; color: var(--navy); }
+.intro-card p { font-family: 'Helvetica Neue', sans-serif; font-size: 15px; line-height: 1.7; color: var(--muted); margin-bottom: 12px; }
+.intro-card p:last-child { margin-bottom: 0; }
+.scale-row { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; }
+.scale-pill { display: flex; align-items: center; gap: 6px; font-family: 'Helvetica Neue', sans-serif; font-size: 12px; color: var(--muted); }
+.scale-num { width: 28px; height: 28px; border-radius: 6px; background: var(--navy); color: var(--white); display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 13px; flex-shrink: 0; }
+
+/* DONE */
+.done-body { max-width: 600px; margin: 0 auto; padding: 40px 24px; text-align: center; }
+.done-icon { width: 64px; height: 64px; border-radius: 50%; background: var(--gold-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 28px; }
+.done-body h2 { font-size: 26px; font-weight: 400; margin-bottom: 12px; color: var(--navy); }
+.done-body p { font-family: 'Helvetica Neue', sans-serif; font-size: 15px; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+
+/* COACH VIEW */
+.coach-wrap { max-width: 800px; margin: 0 auto; padding: 32px 24px; }
+.coach-header { background: var(--navy); border-radius: 12px; padding: 28px 32px; margin-bottom: 24px; color: var(--white); }
+.coach-header h2 { font-size: 22px; font-weight: 400; color: var(--white); margin-bottom: 4px; }
+.coach-meta { font-family: 'Helvetica Neue', sans-serif; font-size: 13px; color: rgba(255,255,255,0.6); }
+.coach-meta span { color: var(--gold); }
+
+.section-title { font-family: 'Helvetica Neue', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+/* MATRIX */
+.matrix-wrap { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+.matrix-svg { width: 100%; }
+
+/* TABLE */
+.results-table { background: var(--white); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+.rt-head { display: grid; grid-template-columns: 1fr 80px 80px 80px; gap: 0; background: var(--navy); padding: 12px 20px; }
+.rt-head span { font-family: 'Helvetica Neue', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.7); text-align: center; }
+.rt-head span:first-child { text-align: left; }
+.rt-row { display: grid; grid-template-columns: 1fr 80px 80px 80px; gap: 0; padding: 14px 20px; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.15s; }
+.rt-row:last-child { border-bottom: none; }
+.rt-row:hover { background: var(--cream); }
+.rt-row.sweet { background: var(--gold-light); }
+.rt-row.sweet:hover { background: #EDE3C0; }
+.rt-name { font-size: 15px; color: var(--navy); display: flex; align-items: center; gap: 8px; }
+.sweet-badge { font-family: 'Helvetica Neue', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.06em; background: var(--gold); color: var(--navy); padding: 2px 7px; border-radius: 4px; text-transform: uppercase; }
+.pill { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 28px; border-radius: 6px; font-family: 'Helvetica Neue', sans-serif; font-size: 13px; font-weight: 500; margin: 0 auto; }
+.pill-k { background: rgba(27,42,74,0.08); color: var(--navy); }
+.pill-i { background: rgba(201,168,76,0.15); color: #8B6914; }
+.pill-s { background: var(--navy); color: var(--white); }
+
+/* RAW */
+.raw-toggle { font-family: 'Helvetica Neue', sans-serif; font-size: 13px; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px; cursor: pointer; margin-bottom: 12px; }
+.raw-toggle:hover { border-color: var(--navy); color: var(--navy); }
+.raw-data { font-family: 'Courier New', monospace; font-size: 12px; background: var(--navy); color: rgba(255,255,255,0.8); border-radius: 8px; padding: 16px; white-space: pre; display: none; overflow-x: auto; margin-bottom: 24px; line-height: 1.8; }
+
+.container-narrow { max-width: 600px; margin: 0 auto; padding: 32px 24px; }
+.container-narrow .form-section { margin-bottom: 20px; }
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="introScreen" class="screen active">
+  <div class="hero">
+    <div class="hero-kicker">Partner Readiness Program</div>
+    <h1>Fachgebiets-Assessment<br><em>Steuerrecht</em></h1>
+    <div class="hero-divider"></div>
+    <p>Du bewertest deine Kompetenz und dein Interesse in neun Kerngebieten des Steuerrechts — als Grundlage für deine persönliche Positionierungsstrategie.</p>
+  </div>
+  <div class="intro-body">
+    <div class="intro-card">
+      <h2>So funktioniert's</h2>
+      <p>Für jedes Fachgebiet bewertest du zwei Dimensionen auf einer Skala von 1 bis 5:</p>
+      <div class="scale-row">
+        <div class="scale-pill"><div class="scale-num">1</div> Keine / kaum</div>
+        <div class="scale-pill"><div class="scale-num">2</div> Grundkenntnisse</div>
+        <div class="scale-pill"><div class="scale-num">3</div> Solide</div>
+        <div class="scale-pill"><div class="scale-num">4</div> Stark</div>
+        <div class="scale-pill"><div class="scale-num">5</div> Experte/in</div>
+      </div>
+      <p><strong>Kompetenz:</strong> Wie gut beherrschst du dieses Gebiet heute?</p>
+      <p><strong>Interesse:</strong> Wie sehr möchtest du in diesem Gebiet tätig sein?</p>
+      <p>Alle 9 Fachgebiete sind verpflichtend zu bewerten. Das Assessment dauert etwa 10 Minuten.</p>
+    </div>
+    <div class="intro-card">
+      <h2>Deine Angaben</h2>
+      <div class="form-row">
+        <div>
+          <label class="form-label">Vorname</label>
+          <input class="form-input" type="text" id="firstName" placeholder="Anna" />
+        </div>
+        <div>
+          <label class="form-label">Nachname</label>
+          <input class="form-input" type="text" id="lastName" placeholder="Muster" />
+        </div>
+      </div>
+      <div style="margin-top:16px;">
+        <label class="form-label">Firma</label>
+        <input class="form-input" type="text" id="kanzlei" placeholder="Muster AG" />
+      </div>
+      <div style="margin-top:16px;">
+        <label class="form-label">Datum</label>
+        <input class="form-input" type="date" id="dateInput" />
+      </div>
+    </div>
+    <div id="introWarn" style="font-family:'Helvetica Neue',sans-serif;font-size:13px;color:var(--red);text-align:center;margin-bottom:16px;display:none;">Bitte alle Felder ausfüllen.</div>
+    <button class="btn btn-primary btn-full" onclick="startQuiz()">Assessment starten →</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quizScreen" class="screen">
+  <div class="progress-wrap">
+    <div class="progress-inner">
+      <span class="progress-label" id="progressLabel">Seite 1 von 3</span>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <span class="progress-count" id="pageCounter">1 / 3</span>
+    </div>
+  </div>
+  <div class="quiz-body">
+    <div class="page-title" id="pageTitle">Fachgebiete des Steuerrechts — Seite 1</div>
+    <div id="questionsContainer"></div>
+    <div class="page-warn" id="pageWarn">Bitte alle Fachgebiete auf dieser Seite bewerten.</div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" id="btnPrev" onclick="changePage(-1)">← Zurück</button>
+      <button class="btn btn-primary" id="btnNext" onclick="changePage(1)">Weiter →</button>
+    </div>
+  </div>
+</div>
+
+<!-- DONE -->
+<div id="doneScreen" class="screen">
+  <div class="done-body">
+    <div class="done-icon">✓</div>
+    <h2>Vielen Dank!</h2>
+    <p>Deine Antworten wurden übermittelt. Dein Coach erhält die Auswertung per E-Mail und bespricht die Ergebnisse mit dir im nächsten Gespräch.</p>
+    <p id="doneName" style="font-weight:500;color:var(--navy);"></p>
+  </div>
+</div>
+
+<!-- COACH VIEW -->
+<div id="coachScreen" class="screen">
+  <div class="hero" style="padding:32px 24px;">
+    <div class="hero-kicker">Coach-Auswertung</div>
+    <h1>Fachgebiets-Assessment<br><em>Steuerrecht</em></h1>
+  </div>
+  <div class="coach-wrap">
+    <div class="coach-header">
+      <h2 id="coachName">—</h2>
+      <div class="coach-meta"><span id="coachKanzlei">—</span> · <span id="coachDate">—</span></div>
+    </div>
+
+    <div class="section-title">Sweet-Spot-Matrix (Kompetenz × Interesse)</div>
+    <div class="matrix-wrap">
+      <svg class="matrix-svg" id="matrixSvg" viewBox="0 0 560 380" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <div class="section-title">Alle Fachgebiete nach Score</div>
+    <div class="results-table">
+      <div class="rt-head">
+        <span>Fachgebiet</span>
+        <span>Kompetenz</span>
+        <span>Interesse</span>
+        <span>Score</span>
+      </div>
+      <div id="resultsBody"></div>
+    </div>
+
+    <button class="raw-toggle" onclick="toggleRaw()">Rohdaten anzeigen</button>
+    <div class="raw-data" id="rawData"></div>
+    <button class="btn btn-secondary" onclick="restartCoach()">Neue Auswertung</button>
+  </div>
+</div>
+
+<script>
+emailjs.init('X5DcsZZxy0M4C--XH');
+const EMAILJS_SERVICE  = 'service_yw6gsbd';
+const EMAILJS_TEMPLATE = 'template_obuh676'; // ← Neues EmailJS Template für Steuerrecht eintragen
+
+const FAECHER = [
+  {
+    label: 'Gewinn- und Kapitalsteuer (Unternehmen)',
+    desc: 'Unternehmensbesteuerung auf Bundes- und Kantonsebene, Steuerplanung für Kapitalgesellschaften, Holdinggesellschaften und Konzerne.'
+  },
+  {
+    label: 'Steuerrulings und Advance Tax Agreements',
+    desc: 'Verbindliche Vorabzusagen der Steuerbehörden, Gestaltung und Einholung von Rulings auf kantonaler und Bundesebene.'
+  },
+  {
+    label: 'Pillar Two / Globale Mindestbesteuerung',
+    desc: 'OECD-Mindeststeuer (15%), QDMTT und Income Inclusion Rule (IIR) in der Schweiz, Auswirkungen auf multinationale Konzerne.'
+  },
+  {
+    label: 'Holdingstrukturen und Beteiligungsabzug',
+    desc: 'Steueroptimale Konzernstrukturen, Beteiligungsabzug auf Dividenden und Kapitalgewinne, Schachtelprivileg.'
+  },
+  {
+    label: 'Steuerliche Verlustverrechnung',
+    desc: 'Verlustvortrag, Verlustübernahme bei Restrukturierungen, steuerliche Behandlung von Sanierungen.'
+  },
+  {
+    label: 'Patent Box und F&E-Abzüge',
+    desc: 'Kantonal unterschiedliche Patent Box-Regime, F&E-Superabzüge bis 50%, steuerliche Förderung von Innovation.'
+  },
+  {
+    label: 'M&A — Steuerliche Strukturierung',
+    desc: 'Share vs. Asset Deal, steuerliche Due Diligence, Käufer- und Verkäuferberatung, Earn-Out-Strukturen.'
+  },
+  {
+    label: 'Unternehmensrestrukturierungen',
+    desc: 'Steuerneutrale Umstrukturierungen, Fusionen, Spaltungen, Umwandlungen und konzerninterne Übertragungen.'
+  },
+  {
+    label: 'Private Equity und Investmentfonds',
+    desc: 'Steuerliche Strukturierung von PE-Transaktionen, Fondsvehikel, Carried Interest, Investorenbesteuerung.'
+  },
+  {
+    label: 'Kapitalmarkttransaktionen',
+    desc: 'Steuerliche Aspekte von IPOs, Kapitalerhöhungen, Anleihen und derivativen Finanzinstrumenten.'
+  },
+  {
+    label: 'Verrechnungspreise — Strategie und Dokumentation',
+    desc: 'VP-Richtlinien und -Dokumentation, Fremdvergleichsgrundsatz, Betriebsprüfungsmanagement und Safe Harbour-Regeln.'
+  },
+  {
+    label: 'BEPS und internationale Standards',
+    desc: 'OECD BEPS-Aktionspläne, Country-by-Country Reporting, Substance-Anforderungen, DEMPE-Analyse.'
+  },
+  {
+    label: 'Advance Pricing Agreements (APA)',
+    desc: 'Unilaterale, bilaterale und multilaterale APAs mit der ESTV, Verhandlungsstrategie und Prozessführung.'
+  },
+  {
+    label: 'Immaterialgüterrechte und Intangibles (TP)',
+    desc: 'Bewertung und Verlagerung von IP, Lizenzstrukturen, steuerliche Behandlung von Entwicklungskosten und HTVI.'
+  },
+  {
+    label: 'Mehrwertsteuer (national)',
+    desc: 'Schweizer MwSt-Recht, Steuerbarkeit, Vorsteuerabzug, Gruppenbesteuerung, Saldosteuersatzmethode.'
+  },
+  {
+    label: 'Grenzüberschreitende Mehrwertsteuer',
+    desc: 'Import- und Exportumsätze, EU-Schnittstellen, Ort der Leistung bei grenzüberschreitenden Dienstleistungen und Lieferungen.'
+  },
+  {
+    label: 'Zölle und Importabgaben',
+    desc: 'Zolltarifrecht, Ursprungsregeln, Zollverfahren, Freihandelsabkommen der Schweiz, Zollpräferenzen.'
+  },
+  {
+    label: 'Stempelabgaben und Emissionsabgabe',
+    desc: 'Umsatzabgabe auf Wertpapierhandel, Emissionsabgabe auf Eigenkapital, Ausnahmetatbestände und Planung.'
+  },
+  {
+    label: 'Verrechnungssteuer und Quellensteuer',
+    desc: 'Schweizer Verrechnungssteuer (35%) auf Dividenden, Zinsen und Gewinne, Rückerstattung, Meldeverfahren.'
+  },
+  {
+    label: 'Einkommens- und Vermögenssteuer natürlicher Personen',
+    desc: 'Einkommenssteuerdeklaration, Vermögenssteuer, Kapitalgewinne auf Privatvermögen, selbständige Erwerbstätigkeit.'
+  },
+  {
+    label: 'Wegzug, Zuzug und Lump-Sum Besteuerung',
+    desc: 'Steuerfolgen bei Wegzug ins Ausland, Zuzugsbesteuerung, Pauschalbesteuerung für Neuzuzüger (Art. 14 DBG).'
+  },
+  {
+    label: 'Erbschaft, Schenkung und Nachfolgeplanung',
+    desc: 'Kantonale Erbschafts- und Schenkungssteuern, steueroptimale Nachfolgeplanung, Unternehmensnachfolge.'
+  },
+  {
+    label: 'Trusts und Stiftungen',
+    desc: 'Steuerliche Behandlung ausländischer Trusts in der Schweiz, Stiftungsbesteuerung, gemeinnützige Organisationen.'
+  },
+  {
+    label: 'Krypto-Assets und digitale Vermögenswerte',
+    desc: 'Steuerliche Klassifikation von Kryptowährungen, NFTs, Staking und Mining, Deklarationspflichten und CARF ab 2026.'
+  },
+  {
+    label: 'Grundstückgewinnsteuer und Handänderungssteuer',
+    desc: 'Kantonal unterschiedliche Grundstückgewinnsteuern, Aufschubtatbestände, Handänderungssteuer und Planung.'
+  },
+  {
+    label: 'Besteuerung Immobilienfonds und -gesellschaften',
+    desc: 'Kollektive Kapitalanlagen mit direktem Grundbesitz, Immobiliengesellschaften, steuerliche Optimierung von Portfolios.'
+  },
+  {
+    label: 'Mitarbeiterbeteiligungen und Aktienoptionen',
+    desc: 'Besteuerung von RSUs, SARs, Optionen und Mitarbeiteraktien, Zeitpunkt der Besteuerung, Sperrfristen.'
+  },
+  {
+    label: 'Expatriates und internationale Mobilität',
+    desc: 'Quellenbesteuerung von Expatriates, Hypothetical Tax, internationale Sozialversicherungskoordination, Split Payroll.'
+  },
+  {
+    label: 'Steuerstreitigkeiten und Einspracheverfahren',
+    desc: 'Einsprache gegen Veranlagungsverfügungen, Beschwerde an Verwaltungsgericht und Bundesgericht, Strategie und Prozessführung.'
+  },
+  {
+    label: 'Verständigungsverfahren, AIA und Informationsaustausch',
+    desc: 'Mutual Agreement Procedures (MAP), automatischer Informationsaustausch (AIA/FATCA), spontaner Informationsaustausch, Amtshilfe.'
+  }
+];
+
+const PS = 3;
+const PAGES = Math.ceil(FAECHER.length / PS); // 30 Gebiete = 10 Seiten
+let answers = FAECHER.map(() => ({ k: null, i: null }));
+let cur = 0;
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('dateInput').value = new Date().toISOString().split('T')[0];
+  const p = new URLSearchParams(location.search).get('coach');
+  if (p) { try { renderCoachResults(JSON.parse(atob(p))); } catch(e) {} }
+});
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startQuiz() {
+  const fn = document.getElementById('firstName').value.trim();
+  const ln = document.getElementById('lastName').value.trim();
+  const kz = document.getElementById('kanzlei').value.trim();
+  const dt = document.getElementById('dateInput').value;
+  if (!fn || !ln || !kz || !dt) {
+    document.getElementById('introWarn').style.display = 'block';
+    return;
+  }
+  document.getElementById('introWarn').style.display = 'none';
+  showScreen('quizScreen');
+  renderPage();
+}
+
+function renderPage() {
+  const pct = (cur / PAGES) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = 'Seite ' + (cur + 1) + ' von ' + PAGES;
+  document.getElementById('pageCounter').textContent = (cur + 1) + ' / ' + PAGES;
+  document.getElementById('pageTitle').textContent = 'Fachgebiete des Steuerrechts — Seite ' + (cur + 1) + ' von ' + PAGES;
+  document.getElementById('btnPrev').style.visibility = cur === 0 ? 'hidden' : 'visible';
+  document.getElementById('btnNext').textContent = cur === PAGES - 1 ? 'Absenden →' : 'Weiter →';
+  document.getElementById('pageWarn').style.display = 'none';
+
+  const st = cur * PS, en = Math.min(st + PS, FAECHER.length);
+  let html = '';
+  for (let i = st; i < en; i++) {
+    const a = answers[i];
+    const complete = a.k !== null && a.i !== null;
+    html += '<div class="q-card' + (complete ? ' complete' : '') + '" id="qc-' + i + '">';
+    html += '<div class="q-header"><div class="q-name">' + FAECHER[i].label + '</div><span class="q-badge">✓ Bewertet</span></div>';
+    html += '<div class="q-desc">' + FAECHER[i].desc + '</div>';
+
+    // Kompetenz
+    html += '<div class="rating-row"><div class="rating-label">Kompetenz</div><div class="stars-wrap"><span class="star-edge">Keine</span><div class="star-btns">';
+    for (let v = 1; v <= 5; v++) html += '<button class="s-btn ' + (a.k === v ? 'sk' : '') + '" onclick="rate(' + i + ',\'k\',' + v + ')">' + v + '</button>';
+    html += '</div><span class="star-edge right">Experte</span></div></div>';
+
+    // Interesse
+    html += '<div class="rating-row"><div class="rating-label">Interesse</div><div class="stars-wrap"><span class="star-edge">Gering</span><div class="star-btns">';
+    for (let v = 1; v <= 5; v++) html += '<button class="s-btn ' + (a.i === v ? 'si' : '') + '" onclick="rate(' + i + ',\'i\',' + v + ')">' + v + '</button>';
+    html += '</div><span class="star-edge right">Sehr hoch</span></div></div>';
+
+    html += '</div>';
+  }
+  document.getElementById('questionsContainer').innerHTML = html;
+}
+
+function rate(idx, dim, val) {
+  answers[idx][dim] = val;
+  const a = answers[idx];
+  const complete = a.k !== null && a.i !== null;
+  const card = document.getElementById('qc-' + idx);
+  card.className = 'q-card' + (complete ? ' complete' : '');
+  // Update buttons
+  const st = cur * PS, en = Math.min(st + PS, FAECHER.length);
+  for (let i = st; i < en; i++) {
+    if (i === idx) {
+      const btns = card.querySelectorAll('.s-btn');
+      let ki = 0;
+      btns.forEach((b, bi) => {
+        const v = (bi % 5) + 1;
+        const isK = bi < 5;
+        b.className = 's-btn ' + (isK ? (answers[i].k === v ? 'sk' : '') : (answers[i].i === v ? 'si' : ''));
+      });
+    }
+  }
+}
+
+function changePage(dir) {
+  if (dir === 1) {
+    const st = cur * PS, en = Math.min(st + PS, FAECHER.length);
+    for (let i = st; i < en; i++) {
+      if (answers[i].k === null || answers[i].i === null) {
+        document.getElementById('pageWarn').style.display = 'block';
+        return;
+      }
+    }
+    if (cur === PAGES - 1) { submitQuiz(); return; }
+    cur++;
+  } else {
+    if (cur === 0) return;
+    cur--;
+  }
+  renderPage();
+}
+
+function submitQuiz() {
+  const fn = document.getElementById('firstName').value.trim();
+  const ln = document.getElementById('lastName').value.trim();
+  const kz = document.getElementById('kanzlei').value.trim();
+  const dt = document.getElementById('dateInput').value;
+  const name = fn + ' ' + ln;
+
+  const scored = FAECHER.map((f, i) => ({
+    label: f.label, k: answers[i].k, i: answers[i].i,
+    score: Math.round((answers[i].k + answers[i].i) / 2 * 10) / 10,
+    sweet: answers[i].k >= 4 && answers[i].i >= 4
+  }));
+
+  const payload = { name, kanzlei: kz, date: dt, answers: answers.map(a => ({k: a.k, i: a.i})) };
+  const encoded = btoa(JSON.stringify(payload));
+  const coachUrl = location.origin + location.pathname + '?coach=' + encoded;
+
+  const raw = scored.map(s => s.label + ': K=' + s.k + ' I=' + s.i + ' Score=' + s.score + (s.sweet ? ' ★' : '')).join('\n');
+
+  emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+    coachee_name: name,
+    kanzlei: kz,
+    date: dt,
+    coach_url: coachUrl,
+    raw_data: raw
+  });
+
+  document.getElementById('doneName').textContent = name + ' · ' + kz;
+  showScreen('doneScreen');
+}
+
+function renderCoachResults(payload) {
+  showScreen('coachScreen');
+  document.getElementById('coachName').textContent = payload.name || '—';
+  document.getElementById('coachKanzlei').textContent = payload.kanzlei || '—';
+  document.getElementById('coachDate').textContent = payload.date || '—';
+
+  const scored = FAECHER.map((f, i) => ({
+    label: f.label,
+    k: payload.answers[i].k,
+    i: payload.answers[i].i,
+    score: Math.round((payload.answers[i].k + payload.answers[i].i) / 2 * 10) / 10,
+    sweet: payload.answers[i].k >= 4 && payload.answers[i].i >= 4
+  })).sort((a, b) => b.score - a.score);
+
+  // Matrix SVG
+  drawMatrix(scored);
+
+  // Table
+  document.getElementById('resultsBody').innerHTML = scored.map(s =>
+    '<div class="rt-row' + (s.sweet ? ' sweet' : '') + '">' +
+    '<div class="rt-name">' + s.label + (s.sweet ? '<span class="sweet-badge">Sweet Spot</span>' : '') + '</div>' +
+    '<div style="text-align:center"><span class="pill pill-k">' + s.k + '</span></div>' +
+    '<div style="text-align:center"><span class="pill pill-i">' + s.i + '</span></div>' +
+    '<div style="text-align:center"><span class="pill pill-s">' + s.score + '</span></div>' +
+    '</div>'
+  ).join('');
+
+  // Raw
+  document.getElementById('rawData').textContent = scored.map(s =>
+    s.label + ': K=' + s.k + ' I=' + s.i + ' Score=' + s.score + (s.sweet ? ' ★' : '')
+  ).join('\n');
+}
+
+function drawMatrix(scored) {
+  const W = 560, H = 380;
+  const pad = { l: 60, r: 30, t: 30, b: 50 };
+  const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+  const navy = '#1B2A4A', gold = '#C9A84C', muted = '#9AA8BB', border = '#DDD8CC';
+
+  const x = v => pad.l + ((v - 1) / 4) * iw;
+  const y = v => pad.t + ih - ((v - 1) / 4) * ih;
+
+  let svg = '';
+
+  // Sweet spot zone
+  const sx = x(4), sy = y(5), sw = x(5) - x(4), sh = y(4) - y(5);
+  svg += '<rect x="' + sx + '" y="' + sy + '" width="' + (W - pad.r - sx) + '" height="' + (H - pad.b - sy) + '" fill="rgba(201,168,76,0.08)" rx="4"/>';
+  svg += '<text x="' + (sx + 6) + '" y="' + (sy + 14) + '" font-family="Helvetica Neue,sans-serif" font-size="10" fill="' + gold + '" letter-spacing="0.06em">SWEET SPOT</text>';
+
+  // Grid lines
+  for (let v = 1; v <= 5; v++) {
+    svg += '<line x1="' + x(v) + '" y1="' + pad.t + '" x2="' + x(v) + '" y2="' + (H - pad.b) + '" stroke="' + border + '" stroke-width="0.5"/>';
+    svg += '<line x1="' + pad.l + '" y1="' + y(v) + '" x2="' + (W - pad.r) + '" y2="' + y(v) + '" stroke="' + border + '" stroke-width="0.5"/>';
+    svg += '<text x="' + x(v) + '" y="' + (H - pad.b + 18) + '" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="11" fill="' + muted + '">' + v + '</text>';
+    svg += '<text x="' + (pad.l - 10) + '" y="' + (y(v) + 4) + '" text-anchor="end" font-family="Helvetica Neue,sans-serif" font-size="11" fill="' + muted + '">' + v + '</text>';
+  }
+
+  // Axis labels
+  svg += '<text x="' + (pad.l + iw / 2) + '" y="' + (H - 8) + '" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="12" fill="' + muted + '">Kompetenz</text>';
+  svg += '<text transform="rotate(-90,' + 16 + ',' + (pad.t + ih / 2) + ')" x="16" y="' + (pad.t + ih / 2) + '" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="12" fill="' + muted + '">Interesse</text>';
+
+  // Dots
+  scored.forEach((s, idx) => {
+    const cx = x(s.k), cy = y(s.i);
+    const fill = s.sweet ? navy : gold;
+    const textFill = s.sweet ? '#FFFFFF' : navy;
+    svg += '<circle cx="' + cx + '" cy="' + cy + '" r="16" fill="' + fill + '" opacity="0.92"/>';
+    svg += '<text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="10" font-weight="500" fill="' + textFill + '">' + (idx + 1) + '</text>';
+  });
+
+  // Legend
+  let lx = pad.l, ly = pad.t - 14;
+  scored.forEach((s, idx) => {
+    const shortLabel = s.label.length > 22 ? s.label.substring(0, 20) + '…' : s.label;
+    svg += '<text x="' + (lx + (idx % 3) * 185) + '" y="' + (idx < 3 ? ly : (idx < 6 ? ly + 14 : ly + 28)) + '" font-family="Helvetica Neue,sans-serif" font-size="10" fill="' + muted + '">' + (idx + 1) + '. ' + shortLabel + '</text>';
+  });
+
+  document.getElementById('matrixSvg').setAttribute('viewBox', '0 0 ' + W + ' ' + (H + 20));
+  document.getElementById('matrixSvg').innerHTML = svg;
+}
+
+function toggleRaw() {
+  const el = document.getElementById('rawData');
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+function restartCoach() {
+  answers = FAECHER.map(() => ({ k: null, i: null }));
+  cur = 0;
+  history.replaceState(null, '', location.pathname);
+  showScreen('introScreen');
+}
+</script>
+</body>
+</html>
