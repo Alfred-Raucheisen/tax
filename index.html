@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fachgebiets-Assessment Steuerrecht</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <style>
 :root {
   --navy: #1B2A4A;
@@ -235,7 +236,8 @@ body { font-family: 'Georgia', serif; background: var(--cream); color: var(--tex
 
     <div class="section-title">Sweet-Spot-Matrix (Kompetenz × Interesse)</div>
     <div class="matrix-wrap">
-      <svg class="matrix-svg" id="matrixSvg" viewBox="0 0 560 380" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div style="position:relative;width:100%;height:420px;"><canvas id="bubbleChart"></canvas></div>
+      <div id="overlapNote" style="margin-top:10px;font-size:12px;color:var(--muted)"></div>
     </div>
 
     <div class="section-title">Alle Fachgebiete nach Score</div>
@@ -258,7 +260,7 @@ body { font-family: 'Georgia', serif; background: var(--cream); color: var(--tex
 <script>
 emailjs.init('X5DcsZZxy0M4C--XH');
 const EMAILJS_SERVICE  = 'service_yw6gsbd';
-const EMAILJS_TEMPLATE = 'template_kv1l6f5';
+const EMAILJS_TEMPLATE = 'template_obuh676'; // ← Neues EmailJS Template für Steuerrecht eintragen
 
 const FAECHER = [
   {
@@ -551,52 +553,81 @@ function renderCoachResults(payload) {
   ).join('\n');
 }
 
+let ci = null;
 function drawMatrix(scored) {
-  const W = 560, H = 380;
-  const pad = { l: 60, r: 30, t: 30, b: 50 };
-  const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
-  const navy = '#1B2A4A', gold = '#C9A84C', muted = '#9AA8BB', border = '#DDD8CC';
-
-  const x = v => pad.l + ((v - 1) / 4) * iw;
-  const y = v => pad.t + ih - ((v - 1) / 4) * ih;
-
-  let svg = '';
-
-  // Sweet spot zone
-  const sx = x(4), sy = y(5), sw = x(5) - x(4), sh = y(4) - y(5);
-  svg += '<rect x="' + sx + '" y="' + sy + '" width="' + (W - pad.r - sx) + '" height="' + (H - pad.b - sy) + '" fill="rgba(201,168,76,0.08)" rx="4"/>';
-  svg += '<text x="' + (sx + 6) + '" y="' + (sy + 14) + '" font-family="Helvetica Neue,sans-serif" font-size="10" fill="' + gold + '" letter-spacing="0.06em">SWEET SPOT</text>';
-
-  // Grid lines
-  for (let v = 1; v <= 5; v++) {
-    svg += '<line x1="' + x(v) + '" y1="' + pad.t + '" x2="' + x(v) + '" y2="' + (H - pad.b) + '" stroke="' + border + '" stroke-width="0.5"/>';
-    svg += '<line x1="' + pad.l + '" y1="' + y(v) + '" x2="' + (W - pad.r) + '" y2="' + y(v) + '" stroke="' + border + '" stroke-width="0.5"/>';
-    svg += '<text x="' + x(v) + '" y="' + (H - pad.b + 18) + '" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="11" fill="' + muted + '">' + v + '</text>';
-    svg += '<text x="' + (pad.l - 10) + '" y="' + (y(v) + 4) + '" text-anchor="end" font-family="Helvetica Neue,sans-serif" font-size="11" fill="' + muted + '">' + v + '</text>';
-  }
-
-  // Axis labels
-  svg += '<text x="' + (pad.l + iw / 2) + '" y="' + (H - 8) + '" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="12" fill="' + muted + '">Kompetenz</text>';
-  svg += '<text transform="rotate(-90,' + 16 + ',' + (pad.t + ih / 2) + ')" x="16" y="' + (pad.t + ih / 2) + '" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="12" fill="' + muted + '">Interesse</text>';
-
-  // Dots
-  scored.forEach((s, idx) => {
-    const cx = x(s.k), cy = y(s.i);
-    const fill = s.sweet ? navy : gold;
-    const textFill = s.sweet ? '#FFFFFF' : navy;
-    svg += '<circle cx="' + cx + '" cy="' + cy + '" r="16" fill="' + fill + '" opacity="0.92"/>';
-    svg += '<text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="10" font-weight="500" fill="' + textFill + '">' + (idx + 1) + '</text>';
+  // Group items by (k, i) position
+  const map = {};
+  scored.forEach(s => {
+    const key = s.k + '_' + s.i;
+    if (!map[key]) map[key] = { x: s.k, y: s.i, labels: [], sweet: s.sweet };
+    map[key].labels.push(s.label);
+    if (s.sweet) map[key].sweet = true;
+  });
+  const cd = Object.values(map).map(d => {
+    const avg = (d.x + d.y) / 2;
+    return {
+      x: d.x, y: d.y, r: 14,
+      labels: d.labels, count: d.labels.length, sweet: d.sweet,
+      bg: d.sweet ? 'rgba(200,168,75,0.88)' : (avg >= 3 ? 'rgba(26,39,68,0.75)' : 'rgba(212,221,240,0.8)'),
+      border: d.sweet ? '#a08030' : (avg >= 3 ? '#1a2744' : '#b0bcd8')
+    };
   });
 
-  // Legend
-  let lx = pad.l, ly = pad.t - 14;
-  scored.forEach((s, idx) => {
-    const shortLabel = s.label.length > 22 ? s.label.substring(0, 20) + '…' : s.label;
-    svg += '<text x="' + (lx + (idx % 3) * 185) + '" y="' + (idx < 3 ? ly : (idx < 6 ? ly + 14 : ly + 28)) + '" font-family="Helvetica Neue,sans-serif" font-size="10" fill="' + muted + '">' + (idx + 1) + '. ' + shortLabel + '</text>';
+  if (ci) ci.destroy();
+  const ctx = document.getElementById('bubbleChart').getContext('2d');
+  ci = new Chart(ctx, {
+    type: 'bubble',
+    data: { datasets: [{ data: cd, backgroundColor: cd.map(d => d.bg), borderColor: cd.map(d => d.border), borderWidth: 1.5, hoverBorderWidth: 2.5 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 28, right: 20, bottom: 8, left: 8 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: () => '',
+            label: c => {
+              const d = c.raw;
+              const lines = d.labels.map(l => '  ' + l);
+              lines.push('');
+              lines.push('  K: ' + d.x + '   I: ' + d.y);
+              return lines;
+            }
+          },
+          backgroundColor: 'rgba(26,39,68,0.93)', bodyColor: 'white', padding: 12, cornerRadius: 8, displayColors: false
+        }
+      },
+      scales: {
+        x: { min: 0, max: 5.8, title: { display: true, text: 'Kompetenz', color: '#6b7a99', font: { size: 12 } }, ticks: { stepSize: 1, color: '#6b7a99' }, grid: { color: 'rgba(212,221,240,0.5)' } },
+        y: { min: 0, max: 5.8, title: { display: true, text: 'Interesse', color: '#6b7a99', font: { size: 12 } }, ticks: { stepSize: 1, color: '#6b7a99' }, grid: { color: 'rgba(212,221,240,0.5)' } }
+      }
+    }
   });
 
-  document.getElementById('matrixSvg').setAttribute('viewBox', '0 0 ' + W + ' ' + (H + 20));
-  document.getElementById('matrixSvg').innerHTML = svg;
+  Chart.register({ id: 'fl', afterDraw(c) {
+    const ctx2 = c.ctx, xs = c.scales.x, ys = c.scales.y, ca = c.chartArea;
+    const x4 = xs.getPixelForValue(4), y4 = ys.getPixelForValue(4);
+    ctx2.save();
+    ctx2.setLineDash([5, 4]); ctx2.strokeStyle = 'rgba(200,168,75,0.45)'; ctx2.lineWidth = 1;
+    ctx2.beginPath(); ctx2.moveTo(x4, ca.top); ctx2.lineTo(x4, ca.bottom); ctx2.stroke();
+    ctx2.beginPath(); ctx2.moveTo(ca.left, y4); ctx2.lineTo(ca.right, y4); ctx2.stroke();
+    ctx2.setLineDash([]);
+    ctx2.font = '500 10px sans-serif'; ctx2.fillStyle = 'rgba(26,39,68,0.28)'; ctx2.fillText('Sweet Spot', x4 + 6, ca.top + 14);
+    const meta = c.getDatasetMeta(0);
+    meta.data.forEach((el, idx) => {
+      const d = cd[idx];
+      ctx2.font = '600 10px sans-serif';
+      ctx2.fillStyle = d.sweet ? 'rgba(80,56,0,0.85)' : (((d.x + d.y) / 2 >= 3) ? 'rgba(255,255,255,0.92)' : 'rgba(80,80,100,0.8)');
+      ctx2.textAlign = 'center'; ctx2.fillText(String(d.count), el.x, el.y + 3.5);
+    });
+    ctx2.restore();
+  }});
+  ci.update();
+
+  const ovl = cd.filter(d => d.count > 1);
+  document.getElementById('overlapNote').innerHTML = ovl.length
+    ? '<strong style="color:var(--navy)">Mehrere Fachgebiete an gleicher Position:</strong> ' + ovl.map(d => 'K=' + d.x + '/I=' + d.y + ': ' + d.labels.join(', ')).join(' · ')
+    : '';
 }
 
 function toggleRaw() {
