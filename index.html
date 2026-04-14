@@ -149,12 +149,12 @@ body { font-family: 'Georgia', serif; background: var(--cream); color: var(--tex
     <div class="hero-kicker">Partner Readiness Program</div>
     <h1>Fachgebiets-Assessment<br><em>Steuerrecht</em></h1>
     <div class="hero-divider"></div>
-    <p>Du bewertest deine Kompetenz und dein Interesse in neun Kerngebieten des Steuerrechts — als Grundlage für deine persönliche Positionierungsstrategie.</p>
+    <p>Sie bewerten Ihre Kompetenz und Ihr Interesse in neun Kerngebieten des Steuerrechts — als Grundlage für Ihre persönliche Positionierungsstrategie.</p>
   </div>
   <div class="intro-body">
     <div class="intro-card">
       <h2>So funktioniert's</h2>
-      <p>Für jedes Fachgebiet bewertest du zwei Dimensionen auf einer Skala von 1 bis 5:</p>
+      <p>Für jedes Fachgebiet bewerten Sie zwei Dimensionen auf einer Skala von 1 bis 5:</p>
       <div class="scale-row">
         <div class="scale-pill"><div class="scale-num">1</div> Keine / kaum</div>
         <div class="scale-pill"><div class="scale-num">2</div> Grundkenntnisse</div>
@@ -162,32 +162,24 @@ body { font-family: 'Georgia', serif; background: var(--cream); color: var(--tex
         <div class="scale-pill"><div class="scale-num">4</div> Stark</div>
         <div class="scale-pill"><div class="scale-num">5</div> Experte/in</div>
       </div>
-      <p><strong>Kompetenz:</strong> Wie gut beherrschst du dieses Gebiet heute?</p>
-      <p><strong>Interesse:</strong> Wie sehr möchtest du in diesem Gebiet tätig sein?</p>
+      <p><strong>Kompetenz:</strong> Wie gut beherrschen Sie dieses Gebiet heute?</p>
+      <p><strong>Interesse:</strong> Wie sehr möchten Sie in diesem Gebiet tätig sein?</p>
       <p>Alle 9 Fachgebiete sind verpflichtend zu bewerten. Das Assessment dauert etwa 10 Minuten.</p>
     </div>
     <div class="intro-card">
-      <h2>Deine Angaben</h2>
+      <h2>Ihre Angaben</h2>
       <div class="form-row">
-        <div>
-          <label class="form-label">Vorname</label>
-          <input class="form-input" type="text" id="firstName" placeholder="Anna" />
+        <div style="flex:1">
+          <label class="form-label">Ihr Name</label>
+          <input class="form-input" type="text" id="userName" placeholder="Vorname Nachname" />
         </div>
         <div>
-          <label class="form-label">Nachname</label>
-          <input class="form-input" type="text" id="lastName" placeholder="Muster" />
+          <label class="form-label">Datum</label>
+          <input class="form-input" type="date" id="dateInput" />
         </div>
-      </div>
-      <div style="margin-top:16px;">
-        <label class="form-label">Firma</label>
-        <input class="form-input" type="text" id="kanzlei" placeholder="Muster AG" />
-      </div>
-      <div style="margin-top:16px;">
-        <label class="form-label">Datum</label>
-        <input class="form-input" type="date" id="dateInput" />
       </div>
     </div>
-    <div id="introWarn" style="font-family:'Helvetica Neue',sans-serif;font-size:13px;color:var(--red);text-align:center;margin-bottom:16px;display:none;">Bitte alle Felder ausfüllen.</div>
+    <div id="introWarn" style="font-family:'Helvetica Neue',sans-serif;font-size:13px;color:var(--red);text-align:center;margin-bottom:16px;display:none;">Bitte Name und Datum ausfüllen.</div>
     <button class="btn btn-primary btn-full" onclick="startQuiz()">Assessment starten →</button>
   </div>
 </div>
@@ -217,7 +209,7 @@ body { font-family: 'Georgia', serif; background: var(--cream); color: var(--tex
   <div class="done-body">
     <div class="done-icon">✓</div>
     <h2>Vielen Dank!</h2>
-    <p>Deine Antworten wurden übermittelt. Dein Coach erhält die Auswertung per E-Mail und bespricht die Ergebnisse mit dir im nächsten Gespräch.</p>
+    <p>Ihre Antworten wurden übermittelt. Ihr Coach erhält die Auswertung per E-Mail und bespricht die Ergebnisse mit Ihnen im nächsten Gespräch.</p>
     <p id="doneName" style="font-weight:500;color:var(--navy);"></p>
   </div>
 </div>
@@ -231,7 +223,7 @@ body { font-family: 'Georgia', serif; background: var(--cream); color: var(--tex
   <div class="coach-wrap">
     <div class="coach-header">
       <h2 id="coachName">—</h2>
-      <div class="coach-meta"><span id="coachKanzlei">—</span> · <span id="coachDate">—</span></div>
+      <div class="coach-meta"><span id="coachDate">—</span></div>
     </div>
 
     <div class="section-title">Sweet-Spot-Matrix (Kompetenz × Interesse)</div>
@@ -403,11 +395,9 @@ function showScreen(id) {
 }
 
 function startQuiz() {
-  const fn = document.getElementById('firstName').value.trim();
-  const ln = document.getElementById('lastName').value.trim();
-  const kz = document.getElementById('kanzlei').value.trim();
+  const name = document.getElementById('userName').value.trim();
   const dt = document.getElementById('dateInput').value;
-  if (!fn || !ln || !kz || !dt) {
+  if (!name || !dt) {
     document.getElementById('introWarn').style.display = 'block';
     return;
   }
@@ -490,11 +480,8 @@ function changePage(dir) {
 }
 
 function submitQuiz() {
-  const fn = document.getElementById('firstName').value.trim();
-  const ln = document.getElementById('lastName').value.trim();
-  const kz = document.getElementById('kanzlei').value.trim();
+  const name = document.getElementById('userName').value.trim();
   const dt = document.getElementById('dateInput').value;
-  const name = fn + ' ' + ln;
 
   const scored = FAECHER.map((f, i) => ({
     label: f.label, k: answers[i].k, i: answers[i].i,
@@ -502,7 +489,7 @@ function submitQuiz() {
     sweet: answers[i].k >= 4 && answers[i].i >= 4
   }));
 
-  const payload = { name, kanzlei: kz, date: dt, answers: answers.map(a => ({k: a.k, i: a.i})) };
+  const payload = { name, date: dt, answers: answers.map(a => ({k: a.k, i: a.i})) };
   const encoded = btoa(JSON.stringify(payload));
   const coachUrl = location.origin + location.pathname + '?coach=' + encoded;
 
@@ -510,20 +497,18 @@ function submitQuiz() {
 
   emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
     coachee_name: name,
-    kanzlei: kz,
     date: dt,
     coach_url: coachUrl,
     raw_data: raw
   });
 
-  document.getElementById('doneName').textContent = name + ' · ' + kz;
+  document.getElementById('doneName').textContent = name;
   showScreen('doneScreen');
 }
 
 function renderCoachResults(payload) {
   showScreen('coachScreen');
   document.getElementById('coachName').textContent = payload.name || '—';
-  document.getElementById('coachKanzlei').textContent = payload.kanzlei || '—';
   document.getElementById('coachDate').textContent = payload.date || '—';
 
   const scored = FAECHER.map((f, i) => ({
